@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getFormattedWeatherData } from "./weatherService";
 
 function App() {
-  const [city, setCity] = useState("Paris");
+  const [city, setCity] = useState("London");
   const [weather, setWeather] = useState(null);
   const [units, setUnits] = useState("metric");
   const [bg, setBg] = useState(hotBg);
@@ -15,13 +15,13 @@ function App() {
       const data = await getFormattedWeatherData(city, units);
       setWeather(data);
 
-      // dynamic bg
       const threshold = units === "metric" ? 20 : 60;
       if (data.temp <= threshold) setBg(coldBg);
       else setBg(hotBg);
     };
 
     fetchWeatherData();
+    getData();
   }, [units, city]);
 
   const handleUnitsClick = (e) => {
@@ -32,13 +32,18 @@ function App() {
     button.innerText = isCelsius ? "°F" : "°C";
     setUnits(isCelsius ? "metric" : "imperial");
   };
-
-  const enterKeyPressed = (e) => {
-    if (e.keyCode === 13) {
-      setCity(e.currentTarget.value);
-      e.currentTarget.blur();
-    }
-  };
+  const [dataa, setDataa] = useState('');
+    const getData = async () => {
+        try{
+            const resp = await fetch(
+                "https://api.sampleapis.com/countries/countries"
+            );
+            const json = await resp.json();
+            setDataa(json);
+        }catch(error){
+            console.log(error);
+        }
+    };
 
   return (
     <div className="app" style={{ backgroundImage: `url(${bg})` }}>
@@ -46,12 +51,16 @@ function App() {
         {weather && (
           <div className="container">
             <div className="section section__inputs">
-              <input
-                onKeyDown={enterKeyPressed}
-                type="text"
-                name="city"
-                placeholder="Enter City..."
-              />
+              {
+              <select name="" className="L-select" id="" onChange={(e)=>{
+                  setCity(e.target.value)
+              }}>
+                  {dataa.length > 0 
+                  ? dataa.map((elem, i) => <option key={i}>{elem.name}</option>)
+                  : console.log('error')
+                  }
+              </select>
+              }
               <button onClick={(e) => handleUnitsClick(e)}>°F</button>
             </div>
 
@@ -67,8 +76,6 @@ function App() {
                 }`}</h1>
               </div>
             </div>
-
-            {/* bottom description */}
             <Descriptions weather={weather} units={units} />
           </div>
         )}
